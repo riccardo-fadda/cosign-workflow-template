@@ -1,0 +1,1 @@
+# cosign-workflow-template
