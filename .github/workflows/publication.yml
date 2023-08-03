@@ -1,0 +1,121 @@
+name: "Publication workflow with cosign"
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_IMAGE_BASE_NAME: riccardofadda/cosign-workflow-template
+  DOCKER_IMAGE_ARCHITECTURE: linux/amd64,linux/arm64
+  DOCKER_IMAGE_CONTEXT: .
+  DOCKER_IMAGE_FILE: Dockerfile
+  DOCKER_IMAGE_PUSH: true
+
+jobs:
+  publication:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    
+    steps:
+    
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.DOCKER_IMAGE_BASE_NAME }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr,value={{base_ref}}
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+            type=raw,event=pr,value={{base_ref}}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          platforms: ${{ env.DOCKER_IMAGE_ARCHITECTURE }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ env.DOCKER_IMAGE_CONTEXT }}
+          file: ${{ env.DOCKER_IMAGE_FILE }}
+          push: ${{ env.DOCKER_IMAGE_PUSH }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ env.DOCKER_IMAGE_ARCHITECTURE }}
+          
+      - name: Sign the image
+        env:
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: cosign sign --yes ${{ env.DOCKER_IMAGE_BASE_NAME }}@${DIGEST}
+
+  cosign-verification:
+    name: Cosign Verification
+
+    runs-on: ubuntu-latest
+
+    needs: build-and-push
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.DOCKER_IMAGE_BASE_NAME }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr,value={{base_ref}}
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+            type=raw,event=pr,value={{base_ref}}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      - name: Cosign verification for each pushed tag
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          for tag in $TAGS; do
+            echo "Verifying the '$tag' tag with Certificate Identity: 'https://github.com/${WORKFLOW_REF} and Certificate OIDC Issuer: 'https://token.actions.githubusercontent.com'"
+            cosign verify "$tag" --certificate-identity="https://github.com/${WORKFLOW_REF}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" | jq .
+          done
+          echo "To verify a tag with cosign, launch the command:"
+          echo "cosign verify [ORGANIZATION]/[REPOSITORY]:[TAG] --certificate-identity=[CERTIFICATE_IDENTITY] --certificate-oidc-issuer=[CERTIFICATE_OIDC_ISSUER]"
