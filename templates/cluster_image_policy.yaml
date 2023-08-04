@@ -1,0 +1,23 @@
+apiVersion: policy.sigstore.dev/v1alpha1
+kind: ClusterImagePolicy
+metadata:
+  name: image-is-signed-by-github-actions
+spec:
+  images:
+  # All images in the Entando Dockerhub registry
+  - glob: "entando/*"
+  authorities:
+  - keyless:
+      # Signed by the public Fulcio certificate authority
+      url: https://fulcio.sigstore.dev
+      identities:
+      # Matches the Github Actions OIDC issuer
+      - issuer: https://token.actions.githubusercontent.com
+        # Matches any github workflow from the entando repositories.
+        subjectRegExp: "https://github.com/entando/*/.github/workflows/*@*"
+      # Matches the Github Actions OIDC issuer
+      - issuer: https://token.actions.githubusercontent.com
+        # Matches any github workflow from the entando-k8s repositories.
+        subjectRegExp: "https://github.com/entando-k8s/*/.github/workflows/*@*"
+    ctlog:
+      url: https://rekor.sigstore.dev
