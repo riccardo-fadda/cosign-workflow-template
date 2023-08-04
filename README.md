@@ -14,3 +14,8 @@ The command to verify an image with cosign is:
 `cosign verify [ORGANIZATION]/[REPOSITORY]:[TAG] --certificate-identity=[CERTIFICATE_IDENTITY] --certificate-oidc-issuer=[CERTIFICATE_OIDC_ISSUER]`
 
 In the case of keyless signing with cosign in Github actions, the Certificate Identity will be `https://github.com/${WORKFLOW_REF}` based on the ref of the workflow (e.g.: `https://github.com/riccardo-fadda/cosign-workflow-template/.github/workflows/publication.yml@refs/heads/main`) and the Certificate OIDC Issuer will be `https://token.actions.githubusercontent.com`.
+In order to verify the Certificate Identity without having to know the full workflow ref, but just the repository, the option `--certificate-identity-regexp` can be used instead.
+
+## Cluster Image Policy
+
+The Cluster Image Policy verifies that the images coming from the `entando` Docker Hub repository match either of the signatures provided. Both have as issuer `https://token.actions.githubusercontent.com`, and as subject they use the regex version of the option, attempting a match with either `https://github.com/entando/*/.github/workflows/*@*` or `https://github.com/entando-k8s/*/.github/workflows/*@*`.
