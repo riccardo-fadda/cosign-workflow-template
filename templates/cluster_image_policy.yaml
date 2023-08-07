@@ -3,9 +3,11 @@ kind: ClusterImagePolicy
 metadata:
   name: image-is-signed-by-github-actions
 spec:
+# If the following line is uncommented, the usage of unsigned images will be allowed, but with a warning
+# mode: warn
   images:
-  # All images in the Entando Dockerhub registry
-  - glob: "entando/*"
+  # All images in the Entando Dockerhub registry (**docker** is a way to include both index.docker.io and registry.hub.docker.com)
+  - glob: "**docker**/entando/**"
   authorities:
   - keyless:
       # Signed by the public Fulcio certificate authority
