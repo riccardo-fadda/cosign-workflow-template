@@ -7,6 +7,8 @@ on:
     branches:
       - release/*
 
+env:
+  GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
 
 jobs:
   if_merged:
@@ -25,8 +27,6 @@ jobs:
           git config --local user.name "Github Actions"
 
       - name: Merge release to develop
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
           git fetch --unshallow
           git checkout main
