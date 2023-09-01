@@ -6,6 +6,11 @@ on:
       - main
     tags:
       - 'v*'
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
 
 env:
   DOCKER_IMAGE_BASE_NAME: riccardofadda/cosign-workflow-template
