@@ -20,14 +20,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
+      - name: Set Git config
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
 
       - name: Merge release to develop
         run: |
+          git fetch --unshallow
           git checkout main
-          git pull origin main
-          git merge --no-ff ${{ github.event.pull_request.base.ref }}
-          git push origin main
+          git pull
+          git merge --no-ff ${{ github.event.pull_request.base.ref }} -m "Auto-merge ${{ github.event.pull_request.base.ref }} to main"
+          git push
