@@ -17,12 +17,13 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@master
-
-      - name: Merge release -> main
-        uses: devmasx/merge-branch@master
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          type: now
-          target_branch: main
-          message: Merge release into main
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Merge release to develop
+        run: |
+          git pull origin main
+          git merge --no-ff ${{ github.event.pull_request.ref }}
+          git push origin main
