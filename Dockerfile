@@ -1,5 +1,5 @@
 FROM alpine:latest
 
-RUN echo "Hello World 10000!"
+RUN echo "Hello World..."
 
 CMD ["/bin/sh"]
