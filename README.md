@@ -18,7 +18,7 @@ In order to verify the Certificate Identity without having to know the full work
 
 ## Cluster Image Policy
 
-The Cluster Image Policy verifies that the images coming from the `entando` Docker Hub repository match either of the signatures provided. Both have as issuer `https://token.actions.githubusercontent.com`, and as subject they use the regex version of the option, attempting a match with either `https://github.com/entando/*/.github/workflows/*@*` or `https://github.com/entando-k8s/*/.github/workflows/*@*`.
+The Cluster Image Policy verifies that the images coming from the `entando` Docker Hub repository match either of the signatures provided. Both have as issuer `https://token.actions.githubusercontent.com`, and as subject they use the regex version of the option, attempting a match with `https://github.com/(entando|entando-k8s)/[^/]+/.github/workflows/[^@]+@.*`.
 
 ### Installation
 
