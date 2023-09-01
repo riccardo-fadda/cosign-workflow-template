@@ -22,6 +22,11 @@ jobs:
         with:
           ref: main
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Merge release to develop
         run: |
           git pull origin main
