@@ -17,8 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.MY_TOKEN }}
 
       - name: Merge release -> main
         uses: devmasx/merge-branch@master
@@ -26,3 +24,4 @@ jobs:
           type: now
           target_branch: main
           message: Merge release into main
+          github_token: ${{ secrets.MY_TOKEN }}
