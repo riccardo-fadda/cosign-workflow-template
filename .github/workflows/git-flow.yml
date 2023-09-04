@@ -20,15 +20,12 @@ jobs:
         with:
           token: ${{ secrets.MY_TOKEN }}
 
-      - name: Set Git config
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "Github Actions"
-
-      - name: Merge release to develop
-        run: |
-          git fetch --unshallow
-          git checkout main
-          git pull
-          git merge --no-ff ${{ github.event.pull_request.base.ref }} -m "Auto-merge ${{ github.event.pull_request.base.ref }} to main"
-          git push
+      - name: Merge release -> main
+        uses: devmasx/merge-branch@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
+        with:
+          type: now
+          target_branch: main
+          message: Merge release into main
+          github_token: ${{ env.GITHUB_TOKEN }}
