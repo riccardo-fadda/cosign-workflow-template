@@ -22,10 +22,7 @@ jobs:
 
       - name: Merge release -> main
         uses: devmasx/merge-branch@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         with:
           type: now
           target_branch: main
           message: Merge release into main
-          github_token: ${{ env.GITHUB_TOKEN }}
